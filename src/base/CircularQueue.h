@@ -73,7 +73,6 @@ public:
 
     void resize()
     {
-        std::cout << "resize" << std::endl;
         size_t newCap = cap_ * 1.5;
         T* newData = new T[newCap];
 

@@ -25,7 +25,10 @@ public:
     static void FulshLogThread();
 
     void write(int level, const char* format, ...);
+    void fatal();
+
     void flush();
+    void closeAndFlush();
 
     int getLevel();
     void setLevel(int level);
@@ -38,7 +41,6 @@ private:
     void changeFile();
     void appendLogLevelTitle(int level);
     void asyncWrite();
-    
 
     static const int LOG_PATH_LEN = 256;
     static const int LOG_NAME_LEN = 256;
@@ -75,10 +77,27 @@ private:
         }\
     } while(0);
 
-#define LOG_DEBUG(format, ...) do {LOG_BASE(0, format, ##__VA_ARGS__)} while(0);
-#define LOG_INFO(format, ...) do {LOG_BASE(1, format, ##__VA_ARGS__)} while(0);
-#define LOG_WARN(format, ...) do {LOG_BASE(2, format, ##__VA_ARGS__)} while(0);
-#define LOG_ERROR(format, ...) do {LOG_BASE(3, format, ##__VA_ARGS__)} while(0);
+#define LOG_FATAL_BASE(level, format, ...) \
+    do {\
+        Log* log = Log::getInstance();\
+        if (log->isOpen() && log->getLevel() <= level) {\
+            log->write(level, format, ##__VA_ARGS__);\
+            log->fatal();\
+        }\
+    } while(0);
 
+#define LEVEL_TRACE 0
+#define LEVEL_DEBUG 1
+#define LEVEL_INFO 2
+#define LEVEL_WARN 3
+#define LEVEL_ERROR 4
+#define LEVEL_FATAL 5
+
+#define LOG_TRACE(format, ...) do {LOG_BASE(LEVEL_TRACE, format, ##__VA_ARGS__)} while(0);
+#define LOG_DEBUG(format, ...) do {LOG_BASE(LEVEL_DEBUG, format, ##__VA_ARGS__)} while(0);
+#define LOG_INFO(format, ...) do {LOG_BASE(LEVEL_INFO, format, ##__VA_ARGS__)} while(0);
+#define LOG_WARN(format, ...) do {LOG_BASE(LEVEL_WARN, format, ##__VA_ARGS__)} while(0);
+#define LOG_ERROR(format, ...) do {LOG_BASE(LEVEL_ERROR, format, ##__VA_ARGS__)} while(0);
+#define LOG_FATAL(format, ...) do {LOG_FATAL_BASE(LEVEL_FATAL, format, ##__VA_ARGS__)} while(0);
 
 #endif

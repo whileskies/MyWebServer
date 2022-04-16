@@ -1,4 +1,23 @@
 #include "Log.h"
+#include <signal.h>
+
+// 强制退出时flush日志
+
+void sigIntExit(int signo)
+{
+    exit(1);
+}
+
+class SigInt {
+public:
+    SigInt()
+    {
+        ::signal(SIGINT, sigIntExit);
+    }
+};
+
+
+SigInt sigint;
 
 Log::Log()
 {
@@ -10,7 +29,18 @@ Log::Log()
     fp_ = nullptr;
 }
 
-Log::~Log()
+void Log::flush()
+{
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (fp_)
+    {
+        fileMutex_.lock();
+        fflush(fp_);
+        fileMutex_.unlock();
+    }
+}
+
+void Log::closeAndFlush()
 {
     if (writeThread_)
     {
@@ -25,6 +55,18 @@ Log::~Log()
         fclose(fp_);
         fileMutex_.unlock();
     }
+}
+
+void Log::fatal()
+{
+    closeAndFlush();
+    abort();
+}
+
+
+Log::~Log()
+{
+    closeAndFlush();
 }
 
 // 仅由主线程初始化

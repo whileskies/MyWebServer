@@ -3,34 +3,39 @@
 #include <condition_variable>
 #include <mutex>
 #include <vector>
+#include <signal.h>
 #include "thread/Thread.h"
 #include "thread/BlockQueue.h"
 #include "base/Buffer.h"
 #include "log/Log.h"
+#include "base/Timestamp.h"
+#include "net/EventLoop.h"
+
+#include "net/Callbacks.h"
+#include "net/Timer.h"
 
 using namespace std;
 
+EventLoop* g_loop;
+
+void threadFunc()
+{
+    g_loop->loop();
+}
+
 int main()
 {
-    Log::getInstance()->init(0, "./log", ".log", 1024);
+    Log::getInstance()->init(LEVEL_TRACE, "./log", ".log", 1024);
 
-    vector<thread> threads;
+    EventLoop loop;
+    g_loop = &loop;
 
-    for (int i = 0; i < 10; i++) {
-        threads.emplace_back(thread([=]{
-            while (1)
-                LOG_DEBUG("thread %d", i);
-            // cout << "hhh" <<endl;
-        }));
-    }
+    Thread t(threadFunc);
+    t.start();
 
-    while(1) {}
+    t.join();
 
-
-
-
-
-
+    
 
     return 0;
 }
