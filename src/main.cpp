@@ -6,7 +6,7 @@
 #include "thread/Thread.h"
 #include "thread/BlockQueue.h"
 #include "base/Buffer.h"
-#include "log/log.h"
+#include "log/Log.h"
 
 using namespace std;
 
